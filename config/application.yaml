@@ -1,0 +1,7 @@
+http:
+  port: 8080
+
+db:
+  name: 'subscribers'
+  username: 'postgres'
+  password: '1112'

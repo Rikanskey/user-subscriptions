@@ -1,0 +1,322 @@
+openapi: 3.0.3
+info:
+  title: "User subsciptions"
+  description: "Applications for aggregating online user subscriptions"
+  version: 0.0.1
+
+servers:
+  - url: "https://{hostname}"
+    variables:
+      hostname:
+        default: "localhost"
+
+paths:
+  /subs:
+    post:
+      tags:
+        - subs
+      operationId: createUserSub
+      requestBody:
+        description: user subscription on service
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserSubRequest'
+      responses:
+        '201':
+          description: user subscription created successfully
+          headers:
+            Content-Location:
+              description: user subscription id
+              schema:
+                type: integer
+
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '422':
+          description: invalid data for request creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subs/findByUser:
+    get:
+      tags:
+        - subs
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: user uuid
+      responses:
+        '200':
+          description: user subscription founded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSubscriptionResponse'
+
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subs/findByUserServicePeriod:
+    get:
+      tags:
+        - subs
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: user uuid
+        - in: query
+          name: service
+          schema:
+            type: string
+          required: true
+          description: serivce name
+        - in: query
+          name: startDate
+          schema:
+            type:
+              string
+          required: true
+          description: start period
+        - in: query
+          name: endDate
+          schema:
+            type:
+              string
+          required: true
+          description: end period
+      responses:
+        '200':
+          description: sum of price users subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionSumPriceResponse'
+
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /subs/{subId}:
+    get:
+      tags:
+        - subs
+      operationId: getSub
+      parameters:
+        - in: path
+          name: subId
+          schema:
+            type: integer
+          required: true
+          description: user subscription id
+      responses:
+        '200':
+          description: found sub
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionResponse'
+
+        '404':
+          description: sub not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+    put:
+      tags:
+        - subs
+      operationId: updateSub
+      parameters:
+        - in: path
+          name: subId
+          schema:
+            type: integer
+          required: true
+          description: user subscription id
+      requestBody:
+        description: user subscription object to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserSubRequest'
+              
+      responses:
+        '200':
+          description: sub updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionResponse'
+
+        '404':
+          description: sub not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - subs
+      operationId: deleteSub
+      parameters:
+        - in: path
+          name: subId
+          schema:
+            type: integer
+          required: true
+          description: user subscription id
+      responses:
+        '204':
+          description: sub updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionResponse'
+
+        '404':
+          description: sub not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+components:
+  schemas:
+    CreateUserSubRequest:
+      type: object
+      required: [service_name, price, user_id, start_date]
+      properties:
+        service_name:
+          type: string
+        price:
+          type: integer
+        user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+
+    UpdateUserSubRequest:
+      type: object
+      required: [service_name, price, user_id, start_date]
+      properties:
+        service_name:
+          type: string
+        price:
+          type: integer
+        user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+
+    UserSubscriptionResponse:
+      type: object
+      required: [id, service_name, price, user_id, start_date]
+      properties:
+        id:
+          type: integer
+        service_name:
+          type: string
+        price:
+          type: integer
+        user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+
+    UserSubscriptionSumPriceResponse:
+      type: integer
+
+
+    Error:
+      type: object
+      required: [slug, details]
+      properties:
+        slug:
+          type: string
+        details:
+          type: string
