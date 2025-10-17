@@ -9,6 +9,8 @@ type (
 	}
 
 	DatabaseConfig struct {
+		Host     string
+		Port     int
 		Name     string
 		Username string
 		Password string

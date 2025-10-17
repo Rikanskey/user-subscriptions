@@ -1,6 +1,7 @@
 package subs
 
 import (
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -24,6 +25,7 @@ type CreationParams struct {
 }
 
 type UpdateParams struct {
+	Id        int
 	Service   string
 	Price     uint
 	UserId    string
@@ -32,9 +34,18 @@ type UpdateParams struct {
 }
 
 var (
-	ErrEmptyUserId  = errors.New("user id cannot be empty")
-	ErrEmptyService = errors.New("service name cannot be empty")
+	ErrEmptyUserId   = errors.New("user id cannot be empty")
+	ErrEmptyService  = errors.New("service name cannot be empty")
+	ErrInvalidUserId = errors.New("invalid user uuid")
 )
+
+func isUserIdCorrect(id string) bool {
+	return uuid.Validate(id) == nil
+}
+
+func IsInvalidSubscriptionParameterError(err error) bool {
+	return errors.Is(err, ErrInvalidUserId) || errors.Is(err, ErrEmptyService) || errors.Is(err, ErrEmptyUserId)
+}
 
 type UsrSubscriptions []UsrSubscription
 
@@ -57,6 +68,9 @@ func NewUsrSubscription(params CreationParams) (UsrSubscription, error) {
 	if params.Service == "" {
 		return UsrSubscription{}, ErrEmptyService
 	}
+	if !isUserIdCorrect(params.UserId) {
+		return UsrSubscription{}, ErrInvalidUserId
+	}
 
 	return UsrSubscription{
 		id:        params.Id,
@@ -75,8 +89,12 @@ func UpdateUsrSubscription(params UpdateParams) (UsrSubscription, error) {
 	if params.Service == "" {
 		return UsrSubscription{}, ErrEmptyService
 	}
+	if !isUserIdCorrect(params.UserId) {
+		return UsrSubscription{}, ErrInvalidUserId
+	}
 
 	return UsrSubscription{
+		id:        params.Id,
 		service:   params.Service,
 		price:     params.Price,
 		userId:    params.UserId,

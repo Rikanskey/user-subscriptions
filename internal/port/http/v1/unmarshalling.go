@@ -104,7 +104,7 @@ func unmarshalUserSubUpdateRequest(w http.ResponseWriter, r *http.Request, subId
 	}, true
 }
 
-func unmarshalFindByUserServicePeriodRequest(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserServicePeriodParams) (app.GetSubByUserServiceDateQuery, error) {
+func unmarshalFindByUserServicePeriodRequest(w http.ResponseWriter, r *http.Request, params GetSubsGetSumPriceParams) (app.GetSubByUserServiceDateQuery, error) {
 	startDate, err := time.Parse(dateLayout, params.StartDate)
 	if err != nil {
 		httperr.BadRequest("bad-request", err, w, r)

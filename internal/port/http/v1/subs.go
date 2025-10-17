@@ -2,7 +2,11 @@ package v1
 
 import (
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"net/http"
+	"user-subscriptions/internal/app"
+	"user-subscriptions/internal/domain/subs"
 	"user-subscriptions/pkg/httperr"
 )
 
@@ -17,23 +21,24 @@ func (h handler) CreateUserSub(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Location", fmt.Sprintf("/subs/%d", id))
 		w.WriteHeader(http.StatusCreated)
 		return
-	} else {
+	} else if subs.IsInvalidSubscriptionParameterError(err) {
 		httperr.UnprocessableEntity("invalid-subscription-parameters", err, w, r)
+		return
 	}
 
 	httperr.InternalServerError("unexpected-error", err, w, r)
 }
 
 func (h handler) GetSubsFindByUser(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserParams) {
-	if params.UserId == "" {
-		w.WriteHeader(http.StatusBadRequest)
+	if params.UserId == "" || uuid.Validate(params.UserId) != nil {
+		httperr.BadRequest("incorrect-user-id", app.ErrUserDoesNotExist, w, r)
 		return
 	}
 
-	subs, err := h.app.Queries.GetSubsByUserId.Handle(r.Context(), params.UserId)
+	subsRes, err := h.app.Queries.GetSubsByUserId.Handle(r.Context(), params.UserId)
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
-		marshalUserSubscriptionResponses(w, r, subs)
+		marshalUserSubscriptionResponses(w, r, subsRes)
 		return
 	}
 
@@ -45,6 +50,9 @@ func (h handler) DeleteSub(w http.ResponseWriter, r *http.Request, subId int) {
 	if err == nil {
 		w.WriteHeader(http.StatusNoContent)
 		return
+	} else if errors.Is(err, app.ErrUserDoesNotExist) {
+		httperr.NotFound("user-not-found", err, w, r)
+		return
 	}
 
 	httperr.InternalServerError("unexpected-error", err, w, r)
@@ -52,17 +60,18 @@ func (h handler) DeleteSub(w http.ResponseWriter, r *http.Request, subId int) {
 
 func (h handler) GetSub(w http.ResponseWriter, r *http.Request, subId int) {
 	sub, err := h.app.Queries.GetSub.Handle(r.Context(), subId)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+	if err == nil {
+		marshalUserSubscription(w, r, sub)
+		return
+	} else if errors.Is(err, app.ErrUserSubscriptionDoesNotExist) {
+		httperr.NotFound("sub-not-found", err, w, r)
 		return
 	}
-	marshalUserSubscription(w, r, sub)
 
 	httperr.InternalServerError("unexpected-error", err, w, r)
 }
 
 func (h handler) UpdateSub(w http.ResponseWriter, r *http.Request, subId int) {
-
 	cmd, ok := unmarshalUserSubUpdateRequest(w, r, subId)
 	if !ok {
 		return
@@ -72,14 +81,15 @@ func (h handler) UpdateSub(w http.ResponseWriter, r *http.Request, subId int) {
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
 		return
-	} else if err != nil {
+	} else if subs.IsInvalidSubscriptionParameterError(err) {
+		httperr.UnprocessableEntity("invalid-subscription-parameters", err, w, r)
 		return
 	}
 
 	httperr.InternalServerError("unexpected-error", err, w, r)
 }
 
-func (h handler) GetSubsFindByUserServicePeriod(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserServicePeriodParams) {
+func (h handler) GetSubsGetSumPrice(w http.ResponseWriter, r *http.Request, params GetSubsGetSumPriceParams) {
 	qry, err := unmarshalFindByUserServicePeriodRequest(w, r, params)
 	if err != nil {
 		return

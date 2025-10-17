@@ -95,7 +95,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /subs/findByUserServicePeriod:
+  /subs/getSumPrice:
     get:
       tags:
         - subs
@@ -133,13 +133,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserSubscriptionSumPriceResponse'
-
-        '404':
-          description: user not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
         default:
           description: unexpected error
@@ -209,6 +202,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserSubscriptionResponse'
+
+        '400':
+          description: bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
         '404':
           description: sub not found

@@ -1,25 +1,25 @@
 version: '3.9'
 
 services:
-  user-subscriptions:
-    image: user-subscriptions
-    container_name: user-subscriptions
-    build:
-      context: .
-      dockerfile: ./build/package/Dockerfile
-
-    ports:
-      - '8080:8080'
-    links:
-      - postgres
-
   postgres:
     image: postgres:latest
     container_name: postgres-container
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1112
-      - POSTGRES_DB=subscriptions
+      - POSTGRES_DB=subscribers
 
     ports:
       - '5432:5432'
+
+  user-subscriptions:
+    image: user-subscriptions
+    container_name: user-subscriptions
+    build:
+      context: ..
+      dockerfile: ./build/package/Dockerfile
+
+    ports:
+      - '8080:8080'
+    links:
+      - postgres

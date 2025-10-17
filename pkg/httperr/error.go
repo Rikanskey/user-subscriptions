@@ -10,10 +10,6 @@ func BadRequest(slug string, err error, w http.ResponseWriter, r *http.Request) 
 	httpRespondWithError(err, slug, w, r, "Bad Request", http.StatusBadRequest)
 }
 
-func Forbidden(slug string, err error, w http.ResponseWriter, r *http.Request) {
-	httpRespondWithError(err, slug, w, r, "Forbidden", http.StatusForbidden)
-}
-
 func NotFound(slug string, err error, w http.ResponseWriter, r *http.Request) {
 	httpRespondWithError(err, slug, w, r, "Not Found", http.StatusNotFound)
 }

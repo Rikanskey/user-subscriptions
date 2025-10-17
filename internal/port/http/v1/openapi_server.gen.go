@@ -20,8 +20,8 @@ type ServerInterface interface {
 	// (GET /subs/findByUser)
 	GetSubsFindByUser(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserParams)
 
-	// (GET /subs/findByUserServicePeriod)
-	GetSubsFindByUserServicePeriod(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserServicePeriodParams)
+	// (GET /subs/getSumPrice)
+	GetSubsGetSumPrice(w http.ResponseWriter, r *http.Request, params GetSubsGetSumPriceParams)
 
 	// (DELETE /subs/{subId})
 	DeleteSub(w http.ResponseWriter, r *http.Request, subId int)
@@ -47,8 +47,8 @@ func (_ Unimplemented) GetSubsFindByUser(w http.ResponseWriter, r *http.Request,
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /subs/findByUserServicePeriod)
-func (_ Unimplemented) GetSubsFindByUserServicePeriod(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserServicePeriodParams) {
+// (GET /subs/getSumPrice)
+func (_ Unimplemented) GetSubsGetSumPrice(w http.ResponseWriter, r *http.Request, params GetSubsGetSumPriceParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -124,13 +124,13 @@ func (siw *ServerInterfaceWrapper) GetSubsFindByUser(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
-// GetSubsFindByUserServicePeriod operation middleware
-func (siw *ServerInterfaceWrapper) GetSubsFindByUserServicePeriod(w http.ResponseWriter, r *http.Request) {
+// GetSubsGetSumPrice operation middleware
+func (siw *ServerInterfaceWrapper) GetSubsGetSumPrice(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetSubsFindByUserServicePeriodParams
+	var params GetSubsGetSumPriceParams
 
 	// ------------- Required query parameter "userId" -------------
 
@@ -193,7 +193,7 @@ func (siw *ServerInterfaceWrapper) GetSubsFindByUserServicePeriod(w http.Respons
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetSubsFindByUserServicePeriod(w, r, params)
+		siw.Handler.GetSubsGetSumPrice(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -398,7 +398,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/subs/findByUser", wrapper.GetSubsFindByUser)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/subs/findByUserServicePeriod", wrapper.GetSubsFindByUserServicePeriod)
+		r.Get(options.BaseURL+"/subs/getSumPrice", wrapper.GetSubsGetSumPrice)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/subs/{subId}", wrapper.DeleteSub)

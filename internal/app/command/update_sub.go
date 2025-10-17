@@ -16,6 +16,7 @@ func NewUpdateSubHandler(subsRepository subsRepository) UpdateSubHandler {
 
 func (us UpdateSubHandler) Handle(ctx context.Context, cmd app.UpdateSubCommand) error {
 	sub, err := subs.UpdateUsrSubscription(subs.UpdateParams{
+		Id:        cmd.Id,
 		UserId:    cmd.UserId,
 		Service:   cmd.Service,
 		Price:     cmd.Price,

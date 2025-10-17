@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose"
 	"github.com/sirupsen/logrus"
 	"log"
 	"user-subscriptions/internal/app"
@@ -15,9 +16,9 @@ import (
 	"user-subscriptions/internal/server"
 )
 
-func Start(configDir string) {
+func Start(configDir, migrationDir string) {
 	cfg := newConfig(configDir)
-	db := initDB(cfg)
+	db := initDB(cfg, migrationDir)
 	application := newApplication(db)
 	startServer(cfg, application)
 }
@@ -31,18 +32,37 @@ func newConfig(configDir string) *config.Config {
 	return cfg
 }
 
-func initDB(cfg *config.Config) *sql.DB {
-	dbInfo := fmt.Sprintf("postgresql://%s:%s@postgres/%s?sslmode=disable",
-		cfg.Database.Username, cfg.Database.Password, cfg.Database.Name)
+func initDB(cfg *config.Config, migrationDir string) *sql.DB {
+	dbInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.Username, cfg.Database.Password, cfg.Database.Name)
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		log.Panicln(err)
 	}
+
 	err = db.Ping()
 	if err != nil {
-		logrus.WithError(err).Println("Unable to connect to database")
+		log.Panicln(err)
 	}
+
+	err = upMigration(db, migrationDir)
+	if err != nil {
+		logrus.Panicln(err)
+	}
+
 	return db
+}
+
+func upMigration(db *sql.DB, migrationDir string) error {
+	err := goose.SetDialect("postgres")
+	if err != nil {
+		return err
+	}
+	err = goose.Status(db, migrationDir)
+	if err != nil {
+		return err
+	}
+	return goose.Up(db, migrationDir)
 }
 
 func newApplication(db *sql.DB) app.Application {

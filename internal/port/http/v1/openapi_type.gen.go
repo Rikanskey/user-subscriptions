@@ -46,8 +46,8 @@ type GetSubsFindByUserParams struct {
 	UserId string `form:"userId" json:"userId"`
 }
 
-// GetSubsFindByUserServicePeriodParams defines parameters for GetSubsFindByUserServicePeriod.
-type GetSubsFindByUserServicePeriodParams struct {
+// GetSubsGetSumPriceParams defines parameters for GetSubsGetSumPrice.
+type GetSubsGetSumPriceParams struct {
 	// UserId user uuid
 	UserId string `form:"userId" json:"userId"`
 

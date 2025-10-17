@@ -1,8 +1,8 @@
-FROM golang:alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /user-subscriptions
 
-COPY go.mod go.sum ./
+COPY go.* ./
 
 RUN go mod download && go mod verify
 
@@ -14,6 +14,8 @@ FROM alpine:3
 
 COPY --from=builder /user-subscriptions/app /user-subscriptions/app
 COPY --from=builder /user-subscriptions/config /config
+COPY --from=builder /user-subscriptions/migration /migration
+
 
 EXPOSE 8080
 

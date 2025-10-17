@@ -2,6 +2,8 @@ http:
   port: 8080
 
 db:
+  host: 'postgres'
+  port: 5432
   name: 'subscribers'
   username: 'postgres'
   password: '1112'
