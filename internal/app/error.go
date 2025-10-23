@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrUserDoesNotExist             = errors.New("user does not exist")
+	ErrUserDoesNotExistOrOutOfPage  = errors.New("user does not exist or out of page")
 	ErrUserSubscriptionDoesNotExist = errors.New("user subscription does not exist")
 	ErrDatabaseProblems             = errors.New("database problems")
 )

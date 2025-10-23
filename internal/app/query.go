@@ -8,3 +8,9 @@ type GetSubByUserServiceDateQuery struct {
 	StartDate time.Time
 	EndDate   time.Time
 }
+
+type GetSubsByUser struct {
+	UserId string
+	Page   int
+	Limit  int
+}

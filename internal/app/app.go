@@ -34,7 +34,7 @@ type (
 		Handle(ctx context.Context, subId int) (UserSubscription, error)
 	}
 	getSubByUserId interface {
-		Handle(ctx context.Context, userId string) ([]UserSubscription, error)
+		Handle(ctx context.Context, qry GetSubsByUser) ([]UserSubscription, error)
 	}
 	getSubsPriceByUserIdServiceDate interface {
 		Handle(ctx context.Context, qry GetSubByUserServiceDateQuery) (uint, error)

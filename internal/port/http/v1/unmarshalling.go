@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"net/http"
 	"time"
@@ -122,4 +123,13 @@ func unmarshalFindByUserServicePeriodRequest(w http.ResponseWriter, r *http.Requ
 		StartDate: startDate,
 		EndDate:   endDate,
 	}, nil
+}
+
+func unmarshallFindByUserRequest(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserParams) (app.GetSubsByUser, bool) {
+	if params.UserId == "" || uuid.Validate(params.UserId) != nil || params.Page <= 0 || params.Limit <= 0 {
+		httperr.BadRequest("incorrect-user-id", app.ErrUserDoesNotExist, w, r)
+		return app.GetSubsByUser{}, false
+	}
+
+	return app.GetSubsByUser{UserId: params.UserId, Page: params.Page, Limit: params.Limit}, true
 }
