@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"user-subscriptions/internal/config"
 )
@@ -20,4 +21,8 @@ func New(cfg *config.Config, handler http.Handler) *Server {
 
 func (s *Server) Run() error {
 	return s.standardServer.ListenAndServe()
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.standardServer.Shutdown(ctx)
 }

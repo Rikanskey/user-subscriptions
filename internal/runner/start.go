@@ -1,12 +1,16 @@
 package runner
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
 	"github.com/sirupsen/logrus"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"user-subscriptions/internal/app"
 	"user-subscriptions/internal/app/command"
 	"user-subscriptions/internal/app/query"
@@ -18,9 +22,13 @@ import (
 
 func Start(configDir, migrationDir string) {
 	cfg := newConfig(configDir)
+
 	db := initDB(cfg, migrationDir)
+	defer db.Close()
 	application := newApplication(db)
-	startServer(cfg, application)
+
+	serv := startServer(cfg, application)
+	shutdown(serv)
 }
 
 func newConfig(configDir string) *config.Config {
@@ -81,11 +89,26 @@ func newApplication(db *sql.DB) app.Application {
 	}
 }
 
-func startServer(cfg *config.Config, application app.Application) {
+func startServer(cfg *config.Config, application app.Application) *server.Server {
 	logrus.Info(fmt.Sprintf("Starting HTTP server on address: %s", cfg.HTTP.Port))
 	httpServer := server.New(cfg, http.NewHandler(application))
 
-	err := httpServer.Run()
+	go func() {
+		err := httpServer.Run()
+		if err != nil {
+			log.Fatalf("HTTP server stopped, %s\n", err)
+		}
+	}()
 
-	log.Panicln("HTTP server stopped, ", err)
+	return httpServer
+}
+
+func shutdown(server *server.Server) {
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
+	logrus.Println("Shutting down server...")
+	if err := server.Shutdown(context.Background()); err != nil {
+		logrus.Fatal(err)
+	}
 }
