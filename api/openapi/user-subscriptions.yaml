@@ -64,6 +64,20 @@ paths:
             type: string
           required: true
           description: user uuid
+        - in: query
+          name: page
+          schema:
+            type:
+              integer
+          required: true
+          description: page number
+        - in: query
+          name: limit
+          schema:
+            type:
+              integer
+          required: true
+          description: number of elements
       responses:
         '200':
           description: user subscription founded successfully
@@ -82,7 +96,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
         '404':
-          description: user not found
+          description: user not found or out of page
           content:
             application/json:
               schema:

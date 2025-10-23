@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"net/http"
 	"user-subscriptions/internal/app"
@@ -30,15 +29,20 @@ func (h handler) CreateUserSub(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handler) GetSubsFindByUser(w http.ResponseWriter, r *http.Request, params GetSubsFindByUserParams) {
-	if params.UserId == "" || uuid.Validate(params.UserId) != nil {
-		httperr.BadRequest("incorrect-user-id", app.ErrUserDoesNotExist, w, r)
+	qry, ok := unmarshallFindByUserRequest(w, r, params)
+	if !ok {
 		return
 	}
 
-	subsRes, err := h.app.Queries.GetSubsByUserId.Handle(r.Context(), params.UserId)
+	subsRes, err := h.app.Queries.GetSubsByUserId.Handle(r.Context(), qry)
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
 		marshalUserSubscriptionResponses(w, r, subsRes)
+		return
+	}
+
+	if errors.Is(err, app.ErrUserDoesNotExistOrOutOfPage) {
+		httperr.NotFound("user-not-found", err, w, r)
 		return
 	}
 

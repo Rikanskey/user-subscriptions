@@ -44,6 +44,12 @@ type UserSubscriptionSumPriceResponse = int
 type GetSubsFindByUserParams struct {
 	// UserId user uuid
 	UserId string `form:"userId" json:"userId"`
+
+	// Page page number
+	Page int `form:"page" json:"page"`
+
+	// Limit number of elements
+	Limit int `form:"limit" json:"limit"`
 }
 
 // GetSubsGetSumPriceParams defines parameters for GetSubsGetSumPrice.
